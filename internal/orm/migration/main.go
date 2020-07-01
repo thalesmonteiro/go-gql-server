@@ -2,20 +2,18 @@ package migration
 
 import (
 	"fmt"
-
-	log "github.com/znobrega/go-gql-server/internal/logger"
-
-	"github.com/jinzhu/gorm"
 	"github.com/znobrega/go-gql-server/internal/orm/migration/jobs"
+	log "github.com/znobrega/go-gql-server/internal/logger"
 	"github.com/znobrega/go-gql-server/internal/orm/models"
+	"github.com/jinzhu/gorm"
 	"gopkg.in/gormigrate.v1"
 )
 
 func updateMigration(db *gorm.DB) error {
 	return db.AutoMigrate(
 		&models.User{},
-		&models.Post{},
-		&models.Video{},
+	//&models.Post{},
+	//&models.Video{},
 	).Error
 }
 
@@ -44,9 +42,9 @@ func ServiceAutoMigration(db *gorm.DB) error {
 	log.Info("Update migration ")
 	m = gormigrate.New(db, gormigrate.DefaultOptions, []*gormigrate.Migration{
 		jobs.SeedUsers,
-		jobs.SeedVideos,
-		jobs.SeedPosts,
-		jobs.SeedOrder,
+		//jobs.SeedVideos,
+		//jobs.SeedPosts,
+		//jobs.SeedOrder,
 	})
 	return m.Migrate()
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/biezhi/gorm-paginator/pagination"
+	"github.com/iancoleman/strcase"
 	"github.com/znobrega/go-gql-server/internal/gql/models"
 )
 
@@ -21,34 +22,26 @@ func (r *queryResolver) OrderAmount(ctx context.Context, obj *models.Order) (flo
 	panic("not implemented")
 }
 
-func (r *queryResolver) Orders(ctx context.Context, id *string, limit *int, page *int, filter map[string]interface{}) (*models.Orders, error) {
-	whereID := "id = ?"
+func (r *queryResolver) Orders(ctx context.Context, limit *int, page *int, filter map[string]interface{}) (*models.Orders, error) {
 	var dbRecords []*models.Order
 
-	// fmt.Sprint(f)
 	db := r.ORM.DB.New()
 
 	if filter != nil {
-		// fmt.Println(filter)
-		// for key, element := range filter {
-		// 	fmt.Println("Key:", key, "=>", "Element:", element)
-		// }
-		db = db.Where(filter)
-	}
+		filterSnakeCase := make(map[string]interface{})
 
-	if id == nil {
-		db = db.Where(whereID, nil)
-	}
+		for key, _ := range filter {
+			filterSnakeCase[strcase.ToSnake(key)] = filter[key]
+		}
 
-	if id != nil && *id != "-99999" {
-		db = db.Where(whereID, *id)
+		db = db.Where(filterSnakeCase)
 	}
 
 	pagination.Paging(&pagination.Param{
 		DB:      db,
 		Page:    *page,
 		Limit:   *limit,
-		OrderBy: []string{"id asc"},
+		OrderBy: []string{"id desc"},
 	}, &dbRecords)
 
 	count := len(dbRecords)

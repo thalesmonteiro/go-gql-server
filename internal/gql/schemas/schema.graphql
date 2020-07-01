@@ -57,7 +57,6 @@ type Posts {
   list: [Post!]!
 }
 
-
 # Define mutations here
 type Mutation {
   createUser(input: UserInput!): User!
@@ -83,11 +82,17 @@ type Orders {
   list: [Order!]!
 }
 
+# input DefaultInput {
+#   limit: Int = 10,
+#   page: Int = 1,
+#   filter: Map
+# }
+
 type Query {
-  orders(limit: Int = 10, Page: Int = 1, filter: Map): Orders!
+  orders(limit: Int = 10, page: Int = 1, filter: Map): Orders!
   users(id: ID): Users!
   videos(id: ID): Videos!
-  posts(id: ID): Posts!
+  posts (id: ID): Posts!
   order: Order!
   transacoes(id: ID = 9999, name: String = "ARGUMENTO VAZIO"): TransacoesFaturas!
 }

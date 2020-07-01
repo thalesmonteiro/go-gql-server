@@ -77,7 +77,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		Order      func(childComplexity int) int
-		Orders     func(childComplexity int, id *string, limit *int, page *int, filter map[string]interface{}) int
+		Orders     func(childComplexity int, limit *int, page *int, filter map[string]interface{}) int
 		Posts      func(childComplexity int, id *string) int
 		Transacoes func(childComplexity int, id *string, name *string) int
 		Users      func(childComplexity int, id *string) int
@@ -126,7 +126,7 @@ type MutationResolver interface {
 	DeleteUser(ctx context.Context, id string) (bool, error)
 }
 type QueryResolver interface {
-	Orders(ctx context.Context, id *string, limit *int, page *int, filter map[string]interface{}) (*models.Orders, error)
+	Orders(ctx context.Context, limit *int, page *int, filter map[string]interface{}) (*models.Orders, error)
 	Users(ctx context.Context, id *string) (*models.Users, error)
 	Videos(ctx context.Context, id *string) (*models.Videos, error)
 	Posts(ctx context.Context, id *string) (*models.Posts, error)
@@ -293,7 +293,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Orders(childComplexity, args["id"].(*string), args["limit"].(*int), args["Page"].(*int), args["filter"].(map[string]interface{})), true
+		return e.complexity.Query.Orders(childComplexity, args["limit"].(*int), args["page"].(*int), args["filter"].(map[string]interface{})), true
 
 	case "Query.posts":
 		if e.complexity.Query.Posts == nil {
@@ -606,6 +606,18 @@ type Posts {
   list: [Post!]!
 }
 
+# Define mutations here
+type Mutation {
+  createUser(input: UserInput!): User!
+  updateUser(id: ID! , input: UserInput!): User!
+  deleteUser(id: ID!): Boolean!
+}
+
+type TransacoesFaturas {
+  id: ID!
+  ds_transacao: String!
+}
+
 type Order {
   ID: ID!
   customerName: String!
@@ -619,24 +631,17 @@ type Orders {
   list: [Order!]!
 }
 
-# Define mutations here
-type Mutation {
-  createUser(input: UserInput!): User!
-  updateUser(id: ID! , input: UserInput!): User!
-  deleteUser(id: ID!): Boolean!
-}
-
-type TransacoesFaturas {
-  id: ID!
-  ds_transacao: String!
-}
-
+# input DefaultInput {
+#   limit: Int = 10,
+#   page: Int = 1,
+#   filter: Map
+# }
 
 type Query {
-  orders(id: ID = -99999, limit: Int = 10, Page: Int = 1, filter: Map): Orders!
+  orders(limit: Int = 10, page: Int = 1, filter: Map): Orders!
   users(id: ID): Users!
   videos(id: ID): Videos!
-  posts(id: ID): Posts!
+  posts (id: ID): Posts!
   order: Order!
   transacoes(id: ID = 9999, name: String = "ARGUMENTO VAZIO"): TransacoesFaturas!
 }`, BuiltIn: false},
@@ -714,38 +719,30 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 func (ec *executionContext) field_Query_orders_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *string
-	if tmp, ok := rawArgs["id"]; ok {
-		arg0, err = ec.unmarshalOID2ᚖstring(ctx, tmp)
+	var arg0 *int
+	if tmp, ok := rawArgs["limit"]; ok {
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["id"] = arg0
+	args["limit"] = arg0
 	var arg1 *int
-	if tmp, ok := rawArgs["limit"]; ok {
+	if tmp, ok := rawArgs["page"]; ok {
 		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["limit"] = arg1
-	var arg2 *int
-	if tmp, ok := rawArgs["Page"]; ok {
-		arg2, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["Page"] = arg2
-	var arg3 map[string]interface{}
+	args["page"] = arg1
+	var arg2 map[string]interface{}
 	if tmp, ok := rawArgs["filter"]; ok {
-		arg3, err = ec.unmarshalOMap2map(ctx, tmp)
+		arg2, err = ec.unmarshalOMap2map(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["filter"] = arg3
+	args["filter"] = arg2
 	return args, nil
 }
 
@@ -1426,7 +1423,7 @@ func (ec *executionContext) _Query_orders(ctx context.Context, field graphql.Col
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Orders(rctx, args["id"].(*string), args["limit"].(*int), args["Page"].(*int), args["filter"].(map[string]interface{}))
+		return ec.resolvers.Query().Orders(rctx, args["limit"].(*int), args["page"].(*int), args["filter"].(map[string]interface{}))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

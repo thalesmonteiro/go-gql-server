@@ -2,7 +2,6 @@ package main
 
 import (
 	log "github.com/znobrega/go-gql-server/internal/logger"
-
 	"github.com/znobrega/go-gql-server/internal/orm"
 	"github.com/znobrega/go-gql-server/pkg/server"
 )
